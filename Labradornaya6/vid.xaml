@@ -11,11 +11,10 @@
         <Slider x:Name="timeline" HorizontalAlignment="Left" Height="24" Margin="0,385,0,0" VerticalAlignment="Top" Width="782" ValueChanged="timeline_ValueChanged" Thumb.DragStarted="timeline_DragStarted" Thumb.DragCompleted="timeline_DragEnded"/>
         <Label x:Name="time" Content="" HorizontalAlignment="Left" Margin="10,354,0,0" VerticalAlignment="Top" Width="45"/>
         <Label x:Name="length" Content="" HorizontalAlignment="Left" Margin="728,359,0,0" VerticalAlignment="Top" Width="54"/>
-        <Button x:Name="bstart" Content="PLAY" HorizontalAlignment="Left" Height="55" Margin="60,325,0,0" VerticalAlignment="Top" Width="85"/>
+        <Button x:Name="bstart" Content="PLAY" HorizontalAlignment="Left" Height="55" Margin="60,325,0,0" VerticalAlignment="Top" Width="85" Click="bstart_Click"/>
         <Button x:Name="bpause" Content="PAUSE" HorizontalAlignment="Left" Height="55" Margin="150,325,0,0" VerticalAlignment="Top" Width="85" Click="bpause_Click"/>
         <Button x:Name="bstop" Content="STOP" HorizontalAlignment="Left" Height="55" Margin="240,325,0,0" VerticalAlignment="Top" Width="85" Click="bstop_Click"/>
         <Slider x:Name="volume" HorizontalAlignment="Left" Height="25" Margin="575,300,0,0" VerticalAlignment="Top" Width="207" ValueChanged="volume_ValueChanged"/>
         <Button x:Name="baddb" Content="ADD VIDEO" HorizontalAlignment="Left" Height="230" Margin="575,10,0,0" VerticalAlignment="Top" Width="207" Click="baddb_Click"/>
-        <Image x:Name="img" HorizontalAlignment="Left" Height="315" Margin="10,0,0,0" VerticalAlignment="Top" Width="560"/>
     </Grid>
 </Window>
