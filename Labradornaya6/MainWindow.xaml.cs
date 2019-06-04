@@ -17,7 +17,7 @@ using Microsoft.Win32;
 using System.Windows.Controls.Primitives;
 using System.Threading;
 
-namespace mp3Player
+namespace mp4Player
 {
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
@@ -29,16 +29,14 @@ namespace mp3Player
 
         Dictionary<string, string> compos = new Dictionary<string, string>();
         MediaPlayer player = new MediaPlayer();
-        
 
-        string tmp;
         bool play;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            player.MediaOpened += Player_MediaOpened;
+            screen.MediaOpened += Player_MediaOpened;
             Timer = new System.Windows.Threading.DispatcherTimer();
             Timer.Tick += new EventHandler(dispatcherTimer_Tick);
             Timer.Interval = new TimeSpan(0, 0, 1);
@@ -46,44 +44,33 @@ namespace mp3Player
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
+            try
+            {
                 if (play == false)
                 {
-                    time.Content = player.Position.Hours + ":" + player.Position.Minutes + ":" + player.Position.Seconds;
-                    slider.Value = player.Position.TotalSeconds;
-                    if (player.Position.TotalSeconds == player.NaturalDuration.TimeSpan.TotalSeconds)
+                    time.Content = screen.Position.Hours + ":" + screen.Position.Minutes + ":" + screen.Position.Seconds;
+                    timeline.Value = screen.Position.TotalSeconds;
+                    length.Content = screen.NaturalDuration;
+                    if (screen.Position.TotalSeconds == screen.NaturalDuration.TimeSpan.TotalSeconds)
                     {
-                        if (cb.IsChecked == true)
-                        {
-                            int count = playList.Items.Count;
-                            Random rnd = new Random();
-
-                            count = rnd.Next(0, count - 1);
-                            playList.SelectedIndex = count;
-                        }
-                        else
-                        {
-                            if (playList.SelectedIndex==playList.Items.Count-1)
-                            {
-                                playList.SelectedIndex = 0;
-                            }
-                            else
-                                playList.SelectedIndex++;
-                        }
                         Thread.Sleep(1000);
-                        player.Play();
                         Timer.Start();
-                        length.Content = player.NaturalDuration;
                         time.Content = "0:0:0";
                     }
                 }
+            }
+            catch
+            {
+                MessageBox.Show("Add video", "Error");
+            }
         }
 
         private void Player_MediaOpened(object sender, EventArgs e)
         {
             try
             {
-                slider.Maximum = player.NaturalDuration.TimeSpan.TotalSeconds;
-                slider.Value = 0;
+                timeline.Maximum = screen.NaturalDuration.TimeSpan.TotalSeconds;
+                timeline.Value = 0;
             }
             catch
             {
@@ -92,137 +79,76 @@ namespace mp3Player
             }
         }
 
-        private void AddBt_Click(object sender, RoutedEventArgs e)
+        private void bstart_Click(object sender, RoutedEventArgs e)
+        {
+            screen.Play();
+            Timer.Start();
+            length.Content = screen.NaturalDuration;
+            time.Content = "00:00:00";
+        }
+
+        private void baddb_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                //выбор файла
                 OpenFileDialog dlg = new OpenFileDialog();
+                dlg.Filter = "Video (.mp4)|*.mp4";
+                dlg.Multiselect = true;
                 dlg.ShowDialog();
-                tmp = System.IO.Path.GetFileNameWithoutExtension(dlg.FileName);
-                compos.Add(tmp, dlg.FileName);
-                playList.Items.Add(tmp);
+                
+                //установка источника
+                screen.Source = new Uri(dlg.FileName, UriKind.Relative);
             }
             catch (ArgumentException)
-            {               
+            {
             }
         }
 
-        private void StartBt_Click(object sender, RoutedEventArgs e)
+        private void bpause_Click(object sender, RoutedEventArgs e)
         {
-
-            if (playList.Items.Count > 0)
-            {
-                if (playList.SelectedIndex > -1)
-                {
-                    if (cb.IsChecked == false)
-                    {
-                        player.Play();
-                        Timer.Start();
-                        length.Content = player.NaturalDuration;
-                        time.Content = "00:00:00";
-                    }
-                    else
-                    {
-                        int count = playList.Items.Count;
-                        Random rnd = new Random();
-
-                        count = rnd.Next(0, count - 1);
-
-                        tmp = playList.Items[count].ToString();
-                        string melody = compos[tmp];
-                        player.Open(new Uri(melody, UriKind.Relative));
-                        Thread.Sleep(800);
-                        player.Play();
-                        Timer.Start();
-                        playList.SelectedItem = tmp;
-                        length.Content = player.NaturalDuration;
-                        time.Content = "00:00:00";
-                    }
-                }
-                else
-                {
-                    if (cb.IsChecked==true)
-                    {
-                        int count = playList.Items.Count;
-                        Random rnd = new Random();
-
-                        count = rnd.Next(0, count - 1);
-
-                        tmp = playList.Items[count].ToString();
-                        string melody = compos[tmp];
-                        player.Open(new Uri(melody, UriKind.Relative));
-                        Thread.Sleep(800);
-                        player.Play();
-                        Timer.Start();
-                        playList.SelectedItem = tmp;
-                        length.Content = player.NaturalDuration;
-                        time.Content = "00:00:00";
-                    }
-                    else
-                    {
-                        SystemSounds.Hand.Play();
-                        MessageBox.Show("Choose the song", "Error");
-                    }
-                }
-            }
-            else
-            {
-                MessageBox.Show("Add music in playlist", "Error");
-            }
+            screen.Pause();
         }
 
-        private void StopBt_Click(object sender, RoutedEventArgs e)
+        private void bstop_Click(object sender, RoutedEventArgs e)
         {
-            player.Stop();
+            screen.Stop();
             Timer.Stop();
             length.Content = "";
             time.Content = "";
         }
 
-        private void PauseBt_Click(object sender, RoutedEventArgs e)
+        private void timeline_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            player.Pause();
-        }
-
-        private void PlayList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            try
-            {
-                tmp = playList.Items[playList.SelectedIndex].ToString();
-                string melody = compos[tmp];
-                player.Open(new Uri(melody, UriKind.Relative));
-            }
-            catch
-            {
-                SystemSounds.Hand.Play();
-                MessageBox.Show("Choose the composition", "Error");
-            }
-        }
-
-        private void Volume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            double sliderValue = (double)volume.Value;
-            player.Volume = sliderValue;
-        }
-
-        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            int sliderValue = (int)slider.Value;
+            int sliderValue = (int)timeline.Value;            
+            //ts = new TimeSpan(0, 0, sliderValue);
+            //screen.Position = ts;
             time.Content = (sliderValue / 3600).ToString() + ":" + (sliderValue / 60).ToString() + ":" + (sliderValue % 60).ToString();
         }
 
-        private void Slider_DragStarted(object sender, DragStartedEventArgs e)
+        private void volume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            double sliderValue = (double)volume.Value;
+            screen.Volume = sliderValue;
+        }
+
+        private void timeline_DragStarted(object sender, DragStartedEventArgs e)
         {
             play = true;
         }
 
-        private void Slider_DragEnded(object sender, DragCompletedEventArgs e)
+        private void timeline_DragEnded(object sender, DragCompletedEventArgs e)
         {
-            int sliderValue = (int)slider.Value;
+            int sliderValue = (int)timeline.Value;
 
             ts = new TimeSpan(0, 0, sliderValue);
-            player.Position = ts;
+            screen.Position = ts;
             play = false;
         }
+
+        //private void bstart_Click_1(object sender, RoutedEventArgs e)
+        //{
+        //    player.Play();
+        //}
     }
 }
