@@ -28,7 +28,7 @@ namespace mp4Player
         TimeSpan ts;
 
         Dictionary<string, string> compos = new Dictionary<string, string>();
-        MediaElement player = new MediaElement();
+        MediaPlayer player = new MediaPlayer();
 
         bool play;
 
@@ -36,7 +36,7 @@ namespace mp4Player
         {
             InitializeComponent();
 
-            player.MediaOpened += Player_MediaOpened;
+            screen.MediaOpened += Player_MediaOpened;
             Timer = new System.Windows.Threading.DispatcherTimer();
             Timer.Tick += new EventHandler(dispatcherTimer_Tick);
             Timer.Interval = new TimeSpan(0, 0, 1);
@@ -44,27 +44,26 @@ namespace mp4Player
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-                if (play == false)
+            if (play == false)
+            {
+                time.Content = screen.Position.Hours + ":" + screen.Position.Minutes + ":" + screen.Position.Seconds;
+                timeline.Value = screen.Position.TotalSeconds;
+                length.Content = screen.NaturalDuration;
+                if (screen.Position.TotalSeconds == screen.NaturalDuration.TimeSpan.TotalSeconds)
                 {
-                    time.Content = player.Position.Hours + ":" + player.Position.Minutes + ":" + player.Position.Seconds;
-                    timeline.Value = player.Position.TotalSeconds;
-                    if (player.Position.TotalSeconds == player.NaturalDuration.TimeSpan.TotalSeconds)
-                    {
-                        Thread.Sleep(1000);
-                        player.Play();
-                        Timer.Start();
-                        length.Content = player.NaturalDuration;
-                        time.Content = "0:0:0";
-                    }
+                    Thread.Sleep(1000);
+                    Timer.Start();
+                    time.Content = "0:0:0";
                 }
-            
+            }
+
         }
 
         private void Player_MediaOpened(object sender, EventArgs e)
         {
             try
             {
-                timeline.Maximum = player.NaturalDuration.TimeSpan.TotalSeconds;
+                timeline.Maximum = screen.NaturalDuration.TimeSpan.TotalSeconds;
                 timeline.Value = 0;
             }
             catch
@@ -76,9 +75,9 @@ namespace mp4Player
 
         private void bstart_Click(object sender, RoutedEventArgs e)
         {
-            player.Play();
+            screen.Play();
             Timer.Start();
-            length.Content = player.NaturalDuration;
+            length.Content = screen.NaturalDuration;
             time.Content = "00:00:00";
         }
 
@@ -86,16 +85,11 @@ namespace mp4Player
         {
             try
             {
+                //выбор файла
                 OpenFileDialog dlg = new OpenFileDialog();
                 dlg.ShowDialog();
-                player.Source = new Uri(dlg.FileName, UriKind.Relative);
-                VideoDrawing aVideoDrawing = new VideoDrawing();
-                aVideoDrawing.Rect = new Rect(10, 0, 560, 315);
-                aVideoDrawing.Player = player;
-                DrawingImage exampleDrawingImage = new DrawingImage(aVideoDrawing);
-                img.Source = exampleDrawingImage;
-                img.Stretch = Stretch.Uniform;
-                img.HorizontalAlignment = HorizontalAlignment.Left;
+                //установка источника
+                screen.Source = new Uri(dlg.FileName, UriKind.Relative);
             }
             catch (ArgumentException)
             {
@@ -104,12 +98,12 @@ namespace mp4Player
 
         private void bpause_Click(object sender, RoutedEventArgs e)
         {
-            player.Pause();
+            screen.Pause();
         }
 
         private void bstop_Click(object sender, RoutedEventArgs e)
         {
-            player.Stop();
+            screen.Stop();
             Timer.Stop();
             length.Content = "";
             time.Content = "";
@@ -117,7 +111,9 @@ namespace mp4Player
 
         private void timeline_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            int sliderValue = (int)timeline.Value;
+            int sliderValue = (int)timeline.Value;            
+            //ts = new TimeSpan(0, 0, sliderValue);
+            //screen.Position = ts;
             time.Content = (sliderValue / 3600).ToString() + ":" + (sliderValue / 60).ToString() + ":" + (sliderValue % 60).ToString();
         }
 
@@ -137,8 +133,13 @@ namespace mp4Player
             int sliderValue = (int)timeline.Value;
 
             ts = new TimeSpan(0, 0, sliderValue);
-            player.Position = ts;
+            screen.Position = ts;
             play = false;
-        }       
+        }
+
+        //private void bstart_Click_1(object sender, RoutedEventArgs e)
+        //{
+        //    player.Play();
+        //}
     }
 }
