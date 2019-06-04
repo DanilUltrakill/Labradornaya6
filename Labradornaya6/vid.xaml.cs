@@ -44,19 +44,25 @@ namespace mp4Player
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-            if (play == false)
+            try
             {
-                time.Content = screen.Position.Hours + ":" + screen.Position.Minutes + ":" + screen.Position.Seconds;
-                timeline.Value = screen.Position.TotalSeconds;
-                length.Content = screen.NaturalDuration;
-                if (screen.Position.TotalSeconds == screen.NaturalDuration.TimeSpan.TotalSeconds)
+                if (play == false)
                 {
-                    Thread.Sleep(1000);
-                    Timer.Start();
-                    time.Content = "0:0:0";
+                    time.Content = screen.Position.Hours + ":" + screen.Position.Minutes + ":" + screen.Position.Seconds;
+                    timeline.Value = screen.Position.TotalSeconds;
+                    length.Content = screen.NaturalDuration;
+                    if (screen.Position.TotalSeconds == screen.NaturalDuration.TimeSpan.TotalSeconds)
+                    {
+                        Thread.Sleep(1000);
+                        Timer.Start();
+                        time.Content = "0:0:0";
+                    }
                 }
             }
-
+            catch
+            {
+                MessageBox.Show("Add video", "Error");
+            }
         }
 
         private void Player_MediaOpened(object sender, EventArgs e)
@@ -87,7 +93,10 @@ namespace mp4Player
             {
                 //выбор файла
                 OpenFileDialog dlg = new OpenFileDialog();
+                dlg.Filter = "Video (.mp4)|*.mp4";
+                dlg.Multiselect = true;
                 dlg.ShowDialog();
+                
                 //установка источника
                 screen.Source = new Uri(dlg.FileName, UriKind.Relative);
             }
